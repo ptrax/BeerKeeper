@@ -22,13 +22,8 @@ public class Background extends JComponent{
      * @param backgroundImage - image to use
      */
     public Background(Image backgroundImage) {
+    	// Set the background image
     	this.image = backgroundImage;
-    	// Read the image, if we can
-		//try {
-		//	image = ImageIO.read(backgroundImage);
-		//} catch (IOException e) {
-		//	System.out.println(e.getMessage());
-		//}
 		
 		// Set the layout so we can place things on this component
         this.setLayout(new BorderLayout());

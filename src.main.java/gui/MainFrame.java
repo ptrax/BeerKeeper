@@ -24,10 +24,6 @@ import javax.swing.JPanel;
 public class MainFrame extends JFrame{
 	// Set up the three menu buttons
 	MenuButton beerBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/beer2.png")));
-	//MenuButton beerBtn = new MenuButton(new ImageIcon("resources/beer2.png"));
-	//MenuButton approvalBtn = new MenuButton(new ImageIcon("resources/approval.png"));
-	//MenuButton factoryBtn = new MenuButton(new ImageIcon("resources/factory.png"));
-
 	MenuButton approvalBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/approval.png")));
 	MenuButton factoryBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/factory.png")));
 	
