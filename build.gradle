@@ -1,0 +1,31 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceSets {
+    main {
+        java {
+            srcDirs= ["src"]
+        }
+        resources {
+            srcDirs= ["resources"]
+        }
+    }
+}
+
+
+mainClassName = "main.Start"
+
+
+defaultTasks 'jar'
+jar {
+	baseName = 'BeerKeeper'
+
+   	from('resources'){
+       into ('resources')
+   	}
+   
+    manifest {
+        attributes 'Main-Class': 'main.Start'
+    }
+
+}
