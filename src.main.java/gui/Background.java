@@ -23,12 +23,19 @@ public class Background extends JComponent{
      */
     public Background(Image backgroundImage) {
     	this.image = backgroundImage;
+    	// Read the image, if we can
+		//try {
+		//	image = ImageIO.read(backgroundImage);
+		//} catch (IOException e) {
+		//	System.out.println(e.getMessage());
+		//}
+		
 		// Set the layout so we can place things on this component
         this.setLayout(new BorderLayout());
     }
     
     /**
-     * Overridden paintComponenet method so we can draw our image. 
+     * Overriden paintComponenet method so we can draw our image. 
      */
     @Override
     protected void paintComponent(Graphics g) {

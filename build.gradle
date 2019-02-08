@@ -4,10 +4,10 @@ apply plugin: 'application'
 sourceSets {
     main {
         java {
-            srcDirs= ["src"]
+            srcDirs= ["src.main.java"]
         }
         resources {
-            srcDirs= ["resources"]
+            srcDirs= ["src.main.resources"]
         }
     }
 }
@@ -20,9 +20,9 @@ defaultTasks 'jar'
 jar {
 	baseName = 'BeerKeeper'
 
-   	from('resources'){
-       into ('resources')
-   	}
+   //	from('src.main.resources'){
+     //  into ('resources')
+   	//}
    
     manifest {
         attributes 'Main-Class': 'main.Start'

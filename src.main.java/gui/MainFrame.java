@@ -23,13 +23,16 @@ import javax.swing.JPanel;
  */
 public class MainFrame extends JFrame{
 	// Set up the three menu buttons
-	MenuButton beerBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/resources/beer2.png")));
-	//MenuButton beerBtn = new MenuButton(new ImageIcon("beer2.png"));
-	MenuButton approvalBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/resources/approval.png")));
-	MenuButton factoryBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/resources/factory.png")));
+	MenuButton beerBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/beer2.png")));
+	//MenuButton beerBtn = new MenuButton(new ImageIcon("resources/beer2.png"));
+	//MenuButton approvalBtn = new MenuButton(new ImageIcon("resources/approval.png"));
+	//MenuButton factoryBtn = new MenuButton(new ImageIcon("resources/factory.png"));
+
+	MenuButton approvalBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/approval.png")));
+	MenuButton factoryBtn = new MenuButton(new ImageIcon(MainFrame.class.getResource("/factory.png")));
 	
 	// Set up the background
-	Image i = Toolkit.getDefaultToolkit().getImage(MainFrame.class.getResource("/resources/BeerStockPhoto3.jpg"));
+	Image i = Toolkit.getDefaultToolkit().getImage(MainFrame.class.getResource("/BeerStockPhoto3.jpg"));
 	JComponent back = new Background(i);
 
 	// Set up the panels for the menu and data portions
