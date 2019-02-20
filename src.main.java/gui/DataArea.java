@@ -1,14 +1,15 @@
 package gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 
 import javax.swing.JComponent;
 
 /**
- * This creates a Data Area panel where the main content of the app will show. 
+ * This creates a Data Area panel where the main content of the app will show.
+ * The Connection setup panel goes here as well as the other panels with 
+ * data from queries.  
  * @author ptraxler
  *
  */
@@ -18,8 +19,8 @@ public class DataArea extends JComponent{
 	 * Set up date area with default size and layout. 
 	 */
 	public DataArea() {
-		this.setLayout(new FlowLayout());
-		this.setPreferredSize(new Dimension(300,360));
+		this.setLayout(new BorderLayout());
+		//this.setPreferredSize(new Dimension(300,360));
 	}
 	
 	/**
@@ -36,5 +37,6 @@ public class DataArea extends JComponent{
         Color color = new Color(255,255,255,135);
         g.setColor(color);
         g.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), 20, 20);
+
     }
 }

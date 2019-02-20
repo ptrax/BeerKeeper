@@ -8,16 +8,17 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 /**
- * This is the main frame for the BeerKeeper application.
+ * This is the main frame for the BeerKeeper application. This has the background, and all other
+ * panels/components have this as their ultimate parent. 
  * 
  * @author Paul Traxler
  */
@@ -34,31 +35,53 @@ public class MainFrame extends JFrame{
 	// Set up the panels for the menu and data portions
 	JPanel dataPanel = new JPanel();
 	MenuPanel menu = new MenuPanel();
-	DataArea da = new DataArea();
+	DataArea dataArea = new DataArea();
+	ConnectionSetupPanel connSetPanel = new ConnectionSetupPanel();
+	HomePanel home = new HomePanel();
 
 	// Create a couple spacers for layout purposes
 	JPanel spacer = new JPanel();
 	JPanel spacer2 = new JPanel();
+	JPanel spacer3 = new JPanel();
 	
-	public MainFrame() {
+	static MainFrame instance = null;
+	
+	/**
+	 * Singleton MainFrame getter
+	 * @return
+	 */
+	public static MainFrame getInstance() {
+		if(instance == null) {
+			instance = new MainFrame(); 
+		}
+		return instance; 
+	}
+	
+	/**
+	 * Private constructor for singleton implementation
+	 */
+	private MainFrame() {
 		// Reference to this frame for future use
 		JFrame frame = this;
 		
 		// Set the spacer values
 		spacer.setPreferredSize(new Dimension(10,40));
 		spacer.setMaximumSize(new Dimension(10,40));
+		spacer3.setPreferredSize(new Dimension(10,60));
+
 		spacer.setOpaque(false);
 		spacer2.setOpaque(false);
-
+		spacer3.setOpaque(false);
+		
 		// Set up the data panel, where the main content will be
 		dataPanel.setLayout(new BorderLayout());
 		dataPanel.setBackground(new Color(255,255,255,0));
 		
-		// Set the content pane to the background componenet
+		// Set the content pane to the background component
 		this.setContentPane(back);
 		back.setLayout(new BorderLayout(20,0));
 		
-		// Add elements to the background compoenent
+		// Add elements to the background component
 		back.add(spacer, BorderLayout.NORTH);
 		back.add(menu,BorderLayout.WEST);
 		back.add(dataPanel, BorderLayout.CENTER);
@@ -69,13 +92,15 @@ public class MainFrame extends JFrame{
 		menu.add(beerBtn);
 		menu.add(factoryBtn);
 		
-		// Add the Data Area to the data panel
-		dataPanel.add(da);
-		
 		// Temporary label just for demonstrating button clicks
-		JLabel label = new JLabel();
-		da.add(label, BorderLayout.CENTER);
-
+		JLabel label = new JLabel(" ", SwingConstants.CENTER);
+		dataArea.add(label, BorderLayout.NORTH);
+		dataArea.add(connSetPanel, BorderLayout.NORTH);
+		dataArea.add(spacer3, BorderLayout.SOUTH);
+		
+		// Add the Data Area to the data panel
+		dataPanel.add(dataArea);
+		
 		//--------------- ACTION LISTENERS ------------------------
 		
 		// Beer button - for showing beer stock info
@@ -89,7 +114,7 @@ public class MainFrame extends JFrame{
 			}
 		});
 		
-		// Approval button - For showing poularity info
+		// Approval button - For showing popularity info
 		approvalBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -120,4 +145,25 @@ public class MainFrame extends JFrame{
 		this.setVisible(true);
 		this.setTitle("BeerKeeper");
 	}
+	
+	/**
+	 * This method is provided to show a panel when requested. 
+	 * @param panel
+	 */
+	public void showPanel(String panel) {
+		// Show the Home panel after database connection
+		if(panel.equals("Home")) {
+			
+			// Get rid of connection setup panel
+			connSetPanel.setVisible(false);
+			dataArea.remove(connSetPanel);
+			
+			// Add home panel
+			dataArea.add(home, BorderLayout.NORTH);
+			home.setVisible(true);
+			dataArea.revalidate();
+			this.revalidate();
+		};
+	}
+	
 }

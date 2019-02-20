@@ -13,19 +13,25 @@ sourceSets {
 }
 
 
-mainClassName = "main.Start"
+mainClassName = "main.Controller"
 
 
 defaultTasks 'jar'
 jar {
 	baseName = 'BeerKeeper'
-
-   //	from('src.main.resources'){
-     //  into ('resources')
-   	//}
    
     manifest {
-        attributes 'Main-Class': 'main.Start'
+        attributes 'Main-Class': 'main.Controller'
     }
 
+}
+
+repositories {
+   flatDir {
+       dirs 'lib'
+   }
+}
+
+dependencies {
+   compile name: 'mysql-connector-java-8.0.15'
 }
