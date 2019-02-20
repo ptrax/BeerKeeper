@@ -38,6 +38,9 @@ public class MainFrame extends JFrame{
 	DataArea dataArea = new DataArea();
 	ConnectionSetupPanel connSetPanel = new ConnectionSetupPanel();
 	HomePanel home = new HomePanel();
+	StockInfoPanel stockPanel = new StockInfoPanel();
+	PopularityInfoPanel popPanel = new PopularityInfoPanel();
+	FactoryInfoPanel factPanel = new FactoryInfoPanel();
 
 	// Create a couple spacers for layout purposes
 	JPanel spacer = new JPanel();
@@ -107,10 +110,7 @@ public class MainFrame extends JFrame{
 		beerBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				label.setText("BeerXplorer");
-				label.setFont(new Font("Serif", Font.PLAIN, 21));
-				frame.repaint();
-				frame.revalidate();
+				showPanel("stock");
 			}
 		});
 		
@@ -118,10 +118,7 @@ public class MainFrame extends JFrame{
 		approvalBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				label.setText("Customer Ratings");
-				label.setFont(new Font("Serif", Font.PLAIN, 21));
-				frame.repaint();
-				frame.revalidate();
+				showPanel("popularity");
 			}
 		});
 		
@@ -129,10 +126,7 @@ public class MainFrame extends JFrame{
 		factoryBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				label.setText("Distrubuters/Breweries");
-				label.setFont(new Font("Serif", Font.PLAIN, 21));
-				frame.repaint();
-				frame.revalidate();
+				showPanel("factory");
 			}
 		});
 		
@@ -151,19 +145,41 @@ public class MainFrame extends JFrame{
 	 * @param panel
 	 */
 	public void showPanel(String panel) {
+		
+		// Clean screen
+		dataArea.removeAll();
+		
 		// Show the Home panel after database connection
 		if(panel.equals("Home")) {
-			
-			// Get rid of connection setup panel
-			connSetPanel.setVisible(false);
-			dataArea.remove(connSetPanel);
-			
-			// Add home panel
 			dataArea.add(home, BorderLayout.NORTH);
 			home.setVisible(true);
 			dataArea.revalidate();
 			this.revalidate();
 		};
+		
+		// Change to Stock screen
+		if(panel.equals("stock")) {
+			dataArea.add(stockPanel, BorderLayout.NORTH);
+			home.setVisible(true);
+			dataArea.revalidate();
+			this.revalidate();
+		}
+		
+		// Change to Brewery/Distributer screen
+		if(panel.equals("factory")) {
+			dataArea.add(factPanel, BorderLayout.NORTH);
+			home.setVisible(true);
+			dataArea.revalidate();
+			this.revalidate();
+		}
+		
+		// Change to Popularity screen
+		if(panel.equals("popularity")) {
+			dataArea.add(popPanel, BorderLayout.NORTH);
+			home.setVisible(true);
+			dataArea.revalidate();
+			this.revalidate();
+		}
 	}
 	
 }
