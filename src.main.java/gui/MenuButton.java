@@ -28,27 +28,27 @@ public class MenuButton extends JButton implements MouseListener{
 		this.setContentAreaFilled(false);
 		this.setBorderPainted(false);
 		
-		// Without this the click effeect won't show.
+		// Without this the click effect won't show.
 		addMouseListener(this);
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {}
-
+	// Move it up and over when mouse clicked.
 	@Override
 	public void mousePressed(MouseEvent e) {
 		this.setSize(this.getWidth()-10, this.getHeight()-10); 
 	}
 
+	// Move it back to normal position when mouse released
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		this.setSize(this.getWidth()+10, this.getHeight()+10); 
 	}
 
+	// Unimplemented
 	@Override
-	public void mouseEntered(MouseEvent e) {
-	}
-
+	public void mouseEntered(MouseEvent e) {}
 	@Override
 	public void mouseExited(MouseEvent e) {}
+	@Override
+	public void mouseClicked(MouseEvent e) {}
 }
