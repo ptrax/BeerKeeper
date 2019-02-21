@@ -72,6 +72,10 @@ public class Controller {
 		return false;
 	}
 	
+	public Connection getConnection() {
+		return this.conn;
+	}
+	
 	/**
 	 * Entry point for Beerkeeper application
 	 * @param args

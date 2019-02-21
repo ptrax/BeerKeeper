@@ -160,7 +160,6 @@ public class MainFrame extends JFrame{
 		// Change to Stock screen
 		if(panel.equals("stock")) {
 			dataArea.add(stockPanel, BorderLayout.NORTH);
-			home.setVisible(true);
 			dataArea.revalidate();
 			this.revalidate();
 		}
@@ -168,15 +167,14 @@ public class MainFrame extends JFrame{
 		// Change to Brewery/Distributer screen
 		if(panel.equals("factory")) {
 			dataArea.add(factPanel, BorderLayout.NORTH);
-			home.setVisible(true);
 			dataArea.revalidate();
 			this.revalidate();
 		}
 		
 		// Change to Popularity screen
 		if(panel.equals("popularity")) {
+			popPanel.setupCombos();
 			dataArea.add(popPanel, BorderLayout.NORTH);
-			home.setVisible(true);
 			dataArea.revalidate();
 			this.revalidate();
 		}
