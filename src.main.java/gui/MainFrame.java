@@ -16,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import main.Controller;
+
 /**
  * This is the main frame for the BeerKeeper application. This has the background, and all other
  * panels/components have this as their ultimate parent. 
@@ -141,43 +143,45 @@ public class MainFrame extends JFrame{
 	}
 	
 	/**
-	 * This method is provided to show a panel when requested. 
+	 * This method is provided to show a panel when requested. Panels will only show if 
+	 * a connection has been established to the DB.
 	 * @param panel
 	 */
 	public void showPanel(String panel) {
 		
-		// Clean screen
-		dataArea.removeAll();
-		
-		// Show the Home panel after database connection
-		if(panel.equals("Home")) {
-			dataArea.add(home, BorderLayout.NORTH);
-			home.setVisible(true);
-			dataArea.revalidate();
-			this.revalidate();
-		};
-		
-		// Change to Stock screen
-		if(panel.equals("stock")) {
-			dataArea.add(stockPanel, BorderLayout.NORTH);
-			dataArea.revalidate();
-			this.revalidate();
-		}
-		
-		// Change to Brewery/Distributer screen
-		if(panel.equals("factory")) {
-			dataArea.add(factPanel, BorderLayout.NORTH);
-			dataArea.revalidate();
-			this.revalidate();
-		}
-		
-		// Change to Popularity screen
-		if(panel.equals("popularity")) {
-			popPanel.setupCombos();
-			dataArea.add(popPanel, BorderLayout.NORTH);
-			dataArea.revalidate();
-			this.revalidate();
+		// Check that we have a connection to the DB
+		if(Controller.getInstance().isConnected()) {
+			// Clean screen
+			dataArea.removeAll();
+			// Show the Home panel after database connection
+			if(panel.equals("Home")) {
+				dataArea.add(home, BorderLayout.NORTH);
+				home.setVisible(true);
+				dataArea.revalidate();
+				this.revalidate();
+			};
+			
+			// Change to Stock screen
+			if(panel.equals("stock")) {
+				dataArea.add(stockPanel, BorderLayout.NORTH);
+				dataArea.revalidate();
+				this.revalidate();
+			}
+			
+			// Change to Brewery/Distributer screen
+			if(panel.equals("factory")) {
+				dataArea.add(factPanel, BorderLayout.NORTH);
+				dataArea.revalidate();
+				this.revalidate();
+			}
+			
+			// Change to Popularity screen
+			if(panel.equals("popularity")) {
+				popPanel.setupCombos();
+				dataArea.add(popPanel, BorderLayout.NORTH);
+				dataArea.revalidate();
+				this.revalidate();
+			}
 		}
 	}
-	
 }

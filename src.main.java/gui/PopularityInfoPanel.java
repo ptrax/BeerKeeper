@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -9,6 +10,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,6 +31,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 
 import main.Controller;
@@ -34,6 +43,8 @@ import main.Controller;
  *
  */
 public class PopularityInfoPanel extends JPanel{
+	JPanel thisPanel = this;
+	
 	// Set up componenets
 	JLabel header = new JLabel("Beer Popularity", SwingConstants.CENTER);
 	
@@ -133,6 +144,60 @@ public class PopularityInfoPanel extends JPanel{
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipady = (int)scroll.getPreferredSize().getHeight();
 		this.add(scroll,c);
+		
+		/**
+		 * Listeners to clean up background when focus gained/lost from fields
+		 */
+		
+		// Loop through components, picking out the JTextField and JComboBox and
+		// adding a listener to them so they don't screw up the background.
+		Component comp[] = this.getComponents();
+		for(Component cmp : comp) {
+			String s = cmp.getClass().getSimpleName();
+			
+			if (s.equals("JComboBox")) {
+				JComboBox<String> jcb = (JComboBox<String>)cmp;
+				jcb.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						//thisPanel.setBackground(thisPanel.getBackground());
+						thisPanel.revalidate();		
+						//thisPanel.getParent().revalidate();
+					}
+					
+				});
+			}
+			if(s.equals("JTextField") || s.contentEquals("JComboBox")) {
+				cmp.addFocusListener(new FocusListener() {
+
+					// Revalidate for the background
+					@Override
+					public void focusGained(FocusEvent e) {
+						thisPanel.setBackground(thisPanel.getBackground());
+						thisPanel.revalidate();		
+						thisPanel.getParent().revalidate();
+					}
+
+					@Override
+					public void focusLost(FocusEvent e) {
+						thisPanel.setBackground(thisPanel.getBackground());
+						thisPanel.revalidate();
+						thisPanel.getParent().revalidate();
+					}
+					
+				});
+			}
+		}
+		
+		// Change Listener for the button so it doesn't wreck the background.
+		execute.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				thisPanel.revalidate();
+			}
+		});
+		
 		
 		/** 
 		 * Action listener for the button click. When a click is detected the query is executed. 
@@ -243,6 +308,7 @@ public class PopularityInfoPanel extends JPanel{
 		try {
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("SELECT Name FROM BEER");
+			beerPicker.removeAllItems();
 			beerPicker.addItem("Any");
 			while(rs.next()) {
 				beerPicker.addItem(rs.getString(1));
@@ -255,6 +321,7 @@ public class PopularityInfoPanel extends JPanel{
 		try {
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("SELECT PkgName FROM PACKAGING");
+			packagePicker.removeAllItems();
 			packagePicker.addItem("Any");
 			while(rs.next()) {
 				packagePicker.addItem(rs.getString(1));
