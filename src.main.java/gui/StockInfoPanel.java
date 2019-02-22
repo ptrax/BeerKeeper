@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Event;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -286,6 +287,8 @@ public class StockInfoPanel extends JPanel{
 							pStmt.executeUpdate();
 							conn.commit();
 
+							// Populate the table again
+							execute.doClick();
 						} catch (SQLException f) {
 							System.out.println(f.getMessage());
 						} finally {
@@ -316,8 +319,9 @@ public class StockInfoPanel extends JPanel{
 							String sql = "DELETE FROM STOCK WHERE pkgID = " + rs.getInt(1) + " AND BeerID = " + rs.getInt(2);
 							stmt.executeUpdate(sql);
 							conn.commit();
-
 							
+							// Populate the table again
+							execute.doClick();
 						} catch (SQLException f) {
 							System.out.println(f.getMessage());
 						} finally {
