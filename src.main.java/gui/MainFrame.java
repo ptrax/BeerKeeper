@@ -138,6 +138,7 @@ public class MainFrame extends JFrame{
 		this.setMinimumSize(new Dimension(400,400));
 		this.setResizable(true);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 		this.setTitle("BeerKeeper");
 	}
