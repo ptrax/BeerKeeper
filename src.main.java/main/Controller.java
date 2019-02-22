@@ -17,6 +17,8 @@ public class Controller {
 	private Connection conn = null;
 	private MainFrame mainFrame = null;
 	
+	private boolean isConnected = false;
+	
 	/**
 	 * Singleton constructor for Controller. If an instance is available, that instance
 	 * is returned. If not, a new object is created and that's returned. 
@@ -59,6 +61,8 @@ public class Controller {
 			
 			// If we get to this point without throwing an error, the connection was successful
 			System.out.println("Connection Success");
+			isConnected = true;
+			
 			mainFrame = MainFrame.getInstance();
 			mainFrame.showPanel("Home");
 			return true;
@@ -70,6 +74,22 @@ public class Controller {
 		
 		// This happens if the connection failed.
 		return false;
+	}
+	
+	/**
+	 * Get the connection to the SQL database. 
+	 * @return Connection to database
+	 */
+	public Connection getConnection() {
+		return this.conn;
+	}
+	
+	/**
+	 * Get the connection status
+	 * @return true if connection to database exists, false otherwise. 
+	 */
+	public boolean isConnected() {
+		return isConnected;
 	}
 	
 	/**
