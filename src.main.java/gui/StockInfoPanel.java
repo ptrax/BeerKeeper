@@ -68,8 +68,6 @@ public class StockInfoPanel extends JPanel{
         header.setFont(new Font("Calibri", Font.PLAIN, 24));
 		c.insets = new Insets(25, 0, 25, 0);
 		c.anchor = GridBagConstraints.NORTH;
-        //c.ipady=0;
-		
 		c.weightx = 0;
 		c.weighty = 1;
 		c.gridy = 0;
@@ -78,33 +76,30 @@ public class StockInfoPanel extends JPanel{
 		this.add(header, c);
 		
 		// Set up "Select Beer" label
-		c.insets = new Insets(0,0,20,0);
+		c.insets = new Insets(0, 0, 20, 0);
 		c.gridy = 1;
 		c.gridwidth = GridBagConstraints.BOTH;
 		this.add(beer, c);
 		
 		// Set up Beer picker
-		//c.insets = new Insets(0,0,0,0);
+		c.insets = new Insets(0,0,0,0);
 		c.gridx = 1;
-		c.gridy = 1;
 		this.add(beerPicker);
 		
 		// Set up "Select Packaging" label
 		c.gridx = 2;
-		c.gridy = 2;
 		this.add(packaging, c);
 		
 		// Set up the package picker
 		c.gridx = 4;
-		c.gridy = 2;
 		this.add(packagePicker, c);
 		
 		// Set up the execute button
 		c.insets = new Insets(0,0,20,0);
-		c.gridx = 2;
-		c.gridy = 3;
+		c.gridx = 4;
+		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.fill = GridBagConstraints.HORIZONTAL;
+		//c.fill = GridBagConstraints.HORIZONTAL;
 		this.add(execute, c);
 		
 		// Set up the table and place it in the scroll pane
@@ -157,23 +152,27 @@ public class StockInfoPanel extends JPanel{
 				// Run the prepared statement to get stock info
 				try {
 					// Need some allowance for the packaging in the query here
-					pStmt = conn.prepareStatement("SELECT Name,WeeksServed,CurrentUnits,Price,PkgID \n" + 
-							"FROM STOCK JOIN BEER ON STOCK.BeerID = BEER.BeerID AND (BEER.Name = ?)");
+					pStmt = conn.prepareStatement("SELECT Name,WeeksServed,CurrentUnits,Price,PACKAGING.pkgName \n" + 
+							"FROM STOCK JOIN BEER ON STOCK.BeerID = BEER.BeerID AND (BEER.Name = ? OR BEER.Name LIKE ?)\n" +
+							"JOIN PACKAGING ON STOCK.pkgID = PACKAGING.pkgID WHERE (PACKAGING.pkgName = ? OR PACKAGING.pkgName LIKE ?);");
 					
 					// Set the first string for the beer name
 					if (beerPicker.getSelectedItem().equals("Any")) {
 						pStmt.setString(1,  "%");
+						pStmt.setString(2,  "%");
 					} else {
 						pStmt.setString(1, (String)beerPicker.getSelectedItem());
+						pStmt.setString(2, (String)beerPicker.getSelectedItem());
+
 					}
 					
-					// Un-comment this to set the string in the query for the packaging
-					// Set the second string for the packaging
-					/*if (packagePicker.getSelectedItem().equals("Any")) {
-						pStmt.setString(2, "%");
+					if (packagePicker.getSelectedItem().equals("Any")) {
+						pStmt.setString(3, "%");
+						pStmt.setString(4, "%");
 					} else {
-						pStmt.setString(2, (String)packagePicker.getSelectedItem());
-					}*/
+						pStmt.setString(3, (String)packagePicker.getSelectedItem());
+						pStmt.setString(4, (String)packagePicker.getSelectedItem());
+					}
 					
 					rs = pStmt.executeQuery();
 					
@@ -196,7 +195,7 @@ public class StockInfoPanel extends JPanel{
 					while (rs.next()) {
 						System.out.println(rs);
 						System.out.println(rs.getString(1));
-						Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getDouble(4), rs.getInt(5)};
+						Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getDouble(4), rs.getString(5)};
 						model.addRow(rowData);
 					}
 					
