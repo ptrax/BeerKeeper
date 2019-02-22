@@ -163,6 +163,7 @@ public class MainFrame extends JFrame{
 			
 			// Change to Stock screen
 			if(panel.equals("stock")) {
+				stockPanel.setupCombos();
 				dataArea.add(stockPanel, BorderLayout.NORTH);
 				dataArea.revalidate();
 				this.revalidate();
