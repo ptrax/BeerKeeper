@@ -138,6 +138,7 @@ public class MainFrame extends JFrame{
 		this.setMinimumSize(new Dimension(400,400));
 		this.setResizable(true);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 		this.setTitle("BeerKeeper");
 	}
@@ -163,6 +164,7 @@ public class MainFrame extends JFrame{
 			
 			// Change to Stock screen
 			if(panel.equals("stock")) {
+				stockPanel.setupCombos();
 				dataArea.add(stockPanel, BorderLayout.NORTH);
 				dataArea.revalidate();
 				this.revalidate();

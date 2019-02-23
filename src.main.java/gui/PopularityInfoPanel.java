@@ -161,13 +161,12 @@ public class PopularityInfoPanel extends JPanel{
 
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						//thisPanel.setBackground(thisPanel.getBackground());
 						thisPanel.revalidate();		
-						//thisPanel.getParent().revalidate();
 					}
 					
 				});
 			}
+			
 			if(s.equals("JTextField") || s.contentEquals("JComboBox")) {
 				cmp.addFocusListener(new FocusListener() {
 
