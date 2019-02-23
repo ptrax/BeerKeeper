@@ -68,6 +68,10 @@ public class MainFrame extends JFrame{
 	private MainFrame() {
 		// Reference to this frame for future use
 		JFrame frame = this;
+                
+                // Adding window icon
+                ImageIcon icon = new ImageIcon(MainFrame.class.getResource("/beercon.png"));
+                frame.setIconImage(icon.getImage());
 		
 		// Set the spacer values
 		spacer.setPreferredSize(new Dimension(10,40));
