@@ -41,7 +41,7 @@ public class FactoryInfoPanel extends JPanel {
 
     // Set up components
     JLabel header = new JLabel("Brewery/Distributer info", SwingConstants.CENTER);
-    JLabel brewery = new JLabel("Brewery    :", SwingConstants.CENTER);
+    JLabel brewery = new JLabel("Brewery:", SwingConstants.CENTER);
     JLabel type = new JLabel("Type:", SwingConstants.CENTER);
 
     JComboBox<String> breweryPicker = new JComboBox<>();
@@ -165,10 +165,10 @@ public class FactoryInfoPanel extends JPanel {
                 boolean picked = true;
                 String pStmt1 = "SELECT bw.Name,bw.Location,b.Name,s.StyleName \n"
                         + "FROM BEER b, BREWERY bw, STYLE s \n"
-                        + "WHERE b.BrewerID = ? AND s.StyleID = b.StyleID;";
-                String pStmt2 = "SELECT bw.Name,bw.Location,b.Name,s.StyleName,t.TypeName\n"
+                        + "WHERE (bw.Name = ? OR bw.Name LIKE ?) AND b.BrewerID = bw.BrewerID AND s.StyleID = b.StyleID;";
+                String pStmt2 = "SELECT bw.Name,bw.Location,b.Name,s.StyleName,t.TypeName \n"
                         + "FROM BEER b, BREWERY bw, STYLE s, TYPE t\n"
-                        + "WHERE b.BrewerID = ? AND s.StyleID = b.StyleID AND t.TypeID = ?;";
+                        + "WHERE (bw.Name = ? OR bw.Name LIKE ?) AND b.BrewerID = bw.BrewerID AND s.StyleID = b.StyleID AND t.TypeID = b.TypeID AND (t.TypeName = ? OR t.TypeName LIKE ?);";
                 // Run the prepared statement to get stock info
                 try {
                     if (typePicker.getSelectedItem().equals("Any")) {
@@ -178,12 +178,22 @@ public class FactoryInfoPanel extends JPanel {
                         pStmt = conn.prepareStatement(pStmt2);
                     }
                     // Set the first string for the brewery name
-                    pStmt.setString(1, (String) breweryPicker.getSelectedItem());
-                    if (picked) {
-                        pStmt.setString(2, (String) typePicker.getSelectedItem());
-                    }
                     if (breweryPicker.getSelectedItem().equals("Any")) {
                         pStmt.setString(1, "%");
+                        pStmt.setString(2, "%");
+                    } else {
+                        pStmt.setString(1, (String) breweryPicker.getSelectedItem());
+                        pStmt.setString(2, (String) breweryPicker.getSelectedItem());
+                    }
+
+                    if (picked) {
+                        if (typePicker.getSelectedItem().equals("Any")) {
+                            pStmt.setString(3, "%");
+                            pStmt.setString(4, "%");
+                        } else {
+                            pStmt.setString(3, (String) typePicker.getSelectedItem());
+                            pStmt.setString(4, (String) typePicker.getSelectedItem());
+                        }
                     }
 
                     rs = pStmt.executeQuery();
@@ -264,13 +274,13 @@ public class FactoryInfoPanel extends JPanel {
             e.printStackTrace();
         }
     }
-    
+
     @Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		//Color is RGBA, where A is alpha (transparency)
-		Color color = new Color(255,255,255,135);
-		g.setColor(color);
-		g.fillRoundRect(0, 0, this.getParent().getWidth(),  this.getParent().getWidth(), 20, 20);
-	}
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        //Color is RGBA, where A is alpha (transparency)
+        Color color = new Color(255, 255, 255, 135);
+        g.setColor(color);
+        g.fillRoundRect(0, 0, this.getParent().getWidth(), this.getParent().getWidth(), 20, 20);
+    }
 }

@@ -176,6 +176,7 @@ public class MainFrame extends JFrame{
 			
 			// Change to Brewery/Distributer screen
 			if(panel.equals("factory")) {
+                                factPanel.setupCombos();
 				dataArea.add(factPanel, BorderLayout.NORTH);
 				dataArea.revalidate();
 				this.revalidate();
