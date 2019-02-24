@@ -355,8 +355,8 @@ public class StockInfoPanel extends JPanel{
 				JTextField descriptionField = new JTextField("Description");
 				
 				// Set up execute button
-				String beerName = beerNameField.getText();
-				JButton executeAdd = new JButton("Add " + beerName + " to beers and stock");
+				
+				JButton executeAdd = new JButton("Add to beers and stock");
 				
 				// Set up panel for the dialog
 				JPanel addPanel = new JPanel(new GridLayout(7,1));
@@ -396,24 +396,27 @@ public class StockInfoPanel extends JPanel{
 							pStmt.setString(1, brewerName);
 							rs = pStmt.executeQuery();
 							int brewerId = 0;
-							if (rs != null) {
-								brewerId = rs.getInt(1);
-							} else {
+							if (rs.next() == false) {
 								rs = stmt.executeQuery("SELECT BrewerID FROM BREWERY ORDER BY BrewerID");
 								while (rs.next()) {
 									if (rs.isLast()) {
 										brewerId = rs.getInt(1) + 1;
 										//Values: BrewerID | Name | Location | Phone | Email
 										pStmt = conn.prepareStatement("INSERT INTO BREWERY VALUES (?,?,?,?,?)");
-										pStmt.setString(1, brewerName);
-										pStmt.setString(2, Integer.toString(brewerId));
+										pStmt.setString(1, Integer.toString(brewerId));
+										pStmt.setString(2, brewerName);
+										
 										
 										//Probably need to update this
 										pStmt.setString(3, "USA");
 										pStmt.setString(4, "123-456-7890");
 										pStmt.setString(5, "brewery@newbrewer.com");
+										pStmt.executeUpdate();
+										conn.commit();
 									}
 								}
+							} else {
+								brewerId = rs.getInt(1);
 							}
 							
 							String brewerIdString = Integer.toString(brewerId);
@@ -423,7 +426,10 @@ public class StockInfoPanel extends JPanel{
 							pStmt = conn.prepareStatement("SELECT StyleID FROM STYLE WHERE StyleName = ?;");
 							pStmt.setString(1, styleName);
 							rs = pStmt.executeQuery();
-							int styleId = rs.getInt(1);
+							int styleId = 0;
+							if (rs.next()) {
+								styleId = rs.getInt(1);
+							}
 							String styleIdString = Integer.toString(styleId);
 							
 							// Get typeId
@@ -431,11 +437,14 @@ public class StockInfoPanel extends JPanel{
 							pStmt = conn.prepareStatement("SELECT TypeID FROM TYPE WHERE TypeName = ?;");
 							pStmt.setString(1, typeName);
 							rs = pStmt.executeQuery();
-							int typeId = rs.getInt(1);
+							int typeId = 0;
+							if (rs.next()) {
+								typeId = rs.getInt(1);
+							}
 							String typeIdString = Integer.toString(typeId);
 							
 							// Add beer to table
-							
+							String beerName = beerNameField.getText();
 							String beerContent = contentField.getText();
 							String description = descriptionField.getText();
 							
@@ -456,7 +465,11 @@ public class StockInfoPanel extends JPanel{
 							pStmt = conn.prepareStatement("SELECT PkgID FROM PACKAGING WHERE PkgName = ?;");
 							pStmt.setString(1, pkgName);
 							rs = pStmt.executeQuery();
-							int pkgId = rs.getInt(1);
+							int pkgId = 0;
+							if (rs.next()) {
+								pkgId = rs.getInt(1);
+							}
+							
 							String pkgIdString = Integer.toString(pkgId);
 							
 							// Get stockID
