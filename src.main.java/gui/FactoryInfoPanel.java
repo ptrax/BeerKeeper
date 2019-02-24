@@ -40,7 +40,7 @@ public class FactoryInfoPanel extends JPanel {
     JPanel thisPanel = this;
 
     // Set up components
-    JLabel header = new JLabel("Brewery/Distributer info", SwingConstants.CENTER);
+    JLabel header = new JLabel("Brewery Info", SwingConstants.CENTER);
     JLabel brewery = new JLabel("Brewery:", SwingConstants.CENTER);
     JLabel type = new JLabel("Type:", SwingConstants.CENTER);
 

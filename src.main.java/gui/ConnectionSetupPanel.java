@@ -77,6 +77,7 @@ public class ConnectionSetupPanel extends JPanel{
 		this.add(url);
 		
 		// Set up the URL Textfield
+		c.insets = new Insets(0, 0, 0, 25);
 		c.weightx = .9;
 		c.gridy = 1;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -84,6 +85,7 @@ public class ConnectionSetupPanel extends JPanel{
 		this.add(urlTF);
 		
 		// Set up the Username label
+		c.insets = new Insets(0, 0, 0, 0);
 		c.fill = 0;
 		c.gridx = 0;
 		c.gridy = 2;
@@ -93,6 +95,7 @@ public class ConnectionSetupPanel extends JPanel{
 		
 		// Set up the Username textfield
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0, 0, 0, 25);
 		c.gridx = 1;
 		c.gridy = 2;
 		c.weightx = .9;
@@ -100,6 +103,7 @@ public class ConnectionSetupPanel extends JPanel{
 		this.add(userTF);
 		
 		// Set up the Password label
+		c.insets = new Insets(0, 0, 0, 0);
 		c.fill = 0;
 		c.gridx = 0;
 		c.gridy = 3;
@@ -109,6 +113,7 @@ public class ConnectionSetupPanel extends JPanel{
 
 		// Set up the Password Textfield
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0, 0, 0, 25);
 		c.gridx = 1;
 		c.gridy = 3;
 		c.weightx = .9;
