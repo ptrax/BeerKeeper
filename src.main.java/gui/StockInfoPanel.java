@@ -380,7 +380,7 @@ public class StockInfoPanel extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
-							//Find last beerId and add 1 to it
+							//Find last beerId and add 1 to it to create new beerId
 							rs = stmt.executeQuery("SELECT BeerId FROM BEER ORDER BY BeerID;");
 							int beerId = 0;
 							while (rs.next()) {
@@ -396,7 +396,7 @@ public class StockInfoPanel extends JPanel{
 							pStmt.setString(1, brewerName);
 							rs = pStmt.executeQuery();
 							int brewerId = 0;
-							if (rs.next() == false) {
+							if (rs.next() == false) { // Checks for null result set
 								rs = stmt.executeQuery("SELECT BrewerID FROM BREWERY ORDER BY BrewerID");
 								while (rs.next()) {
 									if (rs.isLast()) {
@@ -405,7 +405,6 @@ public class StockInfoPanel extends JPanel{
 										pStmt = conn.prepareStatement("INSERT INTO BREWERY VALUES (?,?,?,?,?)");
 										pStmt.setString(1, Integer.toString(brewerId));
 										pStmt.setString(2, brewerName);
-										
 										
 										//Probably need to update this
 										pStmt.setString(3, "USA");
@@ -418,7 +417,6 @@ public class StockInfoPanel extends JPanel{
 							} else {
 								brewerId = rs.getInt(1);
 							}
-							
 							String brewerIdString = Integer.toString(brewerId);
 							
 							// Get styleId
