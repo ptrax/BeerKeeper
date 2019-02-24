@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -142,13 +144,14 @@ public class StockInfoPanel extends JPanel{
 		c.fill = GridBagConstraints.BOTH;
 		this.add(addRow, c);
 		
+		// Set up edit button
 		c.gridx = 2;
 		this.add(editRow,c);
 		
+		// Set up delete button
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridx = 3;
-		this.add(deleteRow,c);
-		
+		this.add(deleteRow,c);	
 		
 		// Just gonna copy Paul's cleanup algorithm here for now, maybe forever
 		Component comp[] = this.getComponents();
@@ -251,7 +254,7 @@ public class StockInfoPanel extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				
 				// Figure out what is selected
-				int  row = table.getSelectedRow();
+				int row = table.getSelectedRow();
 				String beerName = (String)table.getModel().getValueAt(row, 0);
 				String packName = (String)table.getModel().getValueAt(row,4);
 				
@@ -267,7 +270,10 @@ public class StockInfoPanel extends JPanel{
 				// Set up the dialog itself
 				JDialog deletePrompt = new JDialog();
 				deletePrompt.add(deletePanel);
-				deletePrompt.setSize(new Dimension((int)deletePack.getPreferredSize().getWidth(),75));
+				
+				//(gfpierce) The below line didn't render very well for me, so I adjusted the height dimension
+				deletePrompt.setSize(new Dimension((int)deletePack.getPreferredSize().getWidth(),150));
+				//deletePrompt.setSize(400,300);
 				deletePrompt.setLocationRelativeTo(thisPanel);
 				deletePrompt.setVisible(true);
 				
@@ -333,6 +339,171 @@ public class StockInfoPanel extends JPanel{
 				});
 			}
 			
+		});
+		
+		addRow.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				// Set up text fields
+				JTextField brewerNameField = new JTextField("Brewer Name");
+				JTextField styleNameField = new JTextField("Style Name");
+				JTextField typeNameField = new JTextField("Type Name");
+				JTextField pkgNameField = new JTextField("Package Name");
+				JTextField beerNameField = new JTextField("Beer Name");
+				JTextField contentField = new JTextField("Alcohol Content");
+				JTextField descriptionField = new JTextField("Description");
+				
+				// Set up execute button
+				
+				JButton executeAdd = new JButton("Add to beers and stock");
+				
+				// Set up panel for the dialog
+				JPanel addPanel = new JPanel(new GridLayout(7,1));
+				addPanel.add(brewerNameField);
+				addPanel.add(styleNameField);
+				addPanel.add(typeNameField);
+				addPanel.add(pkgNameField);
+				addPanel.add(beerNameField);
+				addPanel.add(contentField);
+				addPanel.add(descriptionField);
+				addPanel.add(executeAdd);
+				
+				// Set up the dialog box
+				JDialog addPrompt = new JDialog();
+				addPrompt.add(addPanel);
+				addPrompt.setSize(600, 450);
+				addPrompt.setLocationRelativeTo(thisPanel);
+				addPrompt.setVisible(true);
+				
+				executeAdd.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//Find last beerId and add 1 to it to create new beerId
+							rs = stmt.executeQuery("SELECT BeerId FROM BEER ORDER BY BeerID;");
+							int beerId = 0;
+							while (rs.next()) {
+								if (rs.isLast()) {
+									beerId = rs.getInt(1) + 1;
+								}
+							}
+							String beerIdString = Integer.toString(beerId);
+							
+							// Set up statement and variables to find brewerId
+							String brewerName = brewerNameField.getText();
+							pStmt = conn.prepareStatement("SELECT BrewerID FROM BREWERY WHERE Name = ?;");
+							pStmt.setString(1, brewerName);
+							rs = pStmt.executeQuery();
+							int brewerId = 0;
+							if (rs.next() == false) { // Checks for null result set
+								rs = stmt.executeQuery("SELECT BrewerID FROM BREWERY ORDER BY BrewerID");
+								while (rs.next()) {
+									if (rs.isLast()) {
+										brewerId = rs.getInt(1) + 1;
+										//Values: BrewerID | Name | Location | Phone | Email
+										pStmt = conn.prepareStatement("INSERT INTO BREWERY VALUES (?,?,?,?,?)");
+										pStmt.setString(1, Integer.toString(brewerId));
+										pStmt.setString(2, brewerName);
+										
+										//Probably need to update this
+										pStmt.setString(3, "USA");
+										pStmt.setString(4, "123-456-7890");
+										pStmt.setString(5, "brewery@newbrewer.com");
+										pStmt.executeUpdate();
+										conn.commit();
+									}
+								}
+							} else {
+								brewerId = rs.getInt(1);
+							}
+							String brewerIdString = Integer.toString(brewerId);
+							
+							// Get styleId
+							String styleName = styleNameField.getText();
+							pStmt = conn.prepareStatement("SELECT StyleID FROM STYLE WHERE StyleName = ?;");
+							pStmt.setString(1, styleName);
+							rs = pStmt.executeQuery();
+							int styleId = 0;
+							if (rs.next()) {
+								styleId = rs.getInt(1);
+							}
+							String styleIdString = Integer.toString(styleId);
+							
+							// Get typeId
+							String typeName = typeNameField.getText();
+							pStmt = conn.prepareStatement("SELECT TypeID FROM TYPE WHERE TypeName = ?;");
+							pStmt.setString(1, typeName);
+							rs = pStmt.executeQuery();
+							int typeId = 0;
+							if (rs.next()) {
+								typeId = rs.getInt(1);
+							}
+							String typeIdString = Integer.toString(typeId);
+							
+							// Add beer to table
+							String beerName = beerNameField.getText();
+							String beerContent = contentField.getText();
+							String description = descriptionField.getText();
+							
+							//Values: BeerId | Name | BrewerID | AlcContent | Description | StyleID | TypeID
+							pStmt = conn.prepareStatement("INSERT INTO BEER VALUES (?,?,?,?,?,?,?);");
+							pStmt.setString(1, beerIdString);
+							pStmt.setString(2, beerName);
+							pStmt.setString(3, brewerIdString);
+							pStmt.setString(4, beerContent);
+							pStmt.setString(5, description);
+							pStmt.setString(6, styleIdString);
+							pStmt.setString(7, typeIdString);
+							pStmt.executeUpdate();
+							conn.commit();
+							
+							// Get pkgID
+							String pkgName = pkgNameField.getText();
+							pStmt = conn.prepareStatement("SELECT PkgID FROM PACKAGING WHERE PkgName = ?;");
+							pStmt.setString(1, pkgName);
+							rs = pStmt.executeQuery();
+							int pkgId = 0;
+							if (rs.next()) {
+								pkgId = rs.getInt(1);
+							}
+							
+							String pkgIdString = Integer.toString(pkgId);
+							
+							// Get stockID
+							rs = stmt.executeQuery("SELECT StockID FROM STOCK;");
+							int stockId = 0;
+							while (rs.next()) {
+								if (rs.isLast()) {
+									stockId = rs.getInt(1) + 1;
+								}
+							}
+							String stockIdString = Integer.toString(stockId);
+							
+							// Insert into stock
+							//Values: 1: StockID | 2: BeerID | 3: WeeksServed | 4: CurrentUnits | 5: DesiredUnits | 6: SoldOverall | 7: Price | 8: PkgID
+							pStmt = conn.prepareStatement("INSERT INTO STOCK VALUES (?,?,?,?,?,?,?,?);");
+							pStmt.setString(1, stockIdString);
+							pStmt.setString(2, beerIdString);
+							pStmt.setString(3, "0");
+							pStmt.setString(4, "0");
+							pStmt.setString(5, "0");
+							pStmt.setString(6, "0");
+							pStmt.setString(7, "0");
+							pStmt.setString(8, pkgIdString);
+							
+							pStmt.executeUpdate();
+							conn.commit();
+							execute.doClick();
+						} catch (SQLException exc) {
+							exc.printStackTrace();
+						} finally {
+							addPrompt.dispose();
+						}
+					}
+				});
+				
+			}
 		});
 	}
 	
