@@ -40,7 +40,7 @@ public class FactoryInfoPanel extends JPanel {
     JPanel thisPanel = this;
 
     // Set up components
-    JLabel header = new JLabel("Brewery/Distributer info", SwingConstants.CENTER);
+    JLabel header = new JLabel("Brewery Info", SwingConstants.CENTER);
     JLabel brewery = new JLabel("Brewery:", SwingConstants.CENTER);
     JLabel type = new JLabel("Type:", SwingConstants.CENTER);
 
@@ -161,6 +161,8 @@ public class FactoryInfoPanel extends JPanel {
         execute.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            	conn = Controller.getInstance().getConnection();
+            	
                 // Prepare alternate prepared statements
                 boolean picked = true;
                 String pStmt1 = "SELECT bw.Name,bw.Location,b.Name,s.StyleName \n"
@@ -228,12 +230,22 @@ public class FactoryInfoPanel extends JPanel {
 
                     table.setModel(model);
 
-                    // Should have these but it takes away the ability to run another query because the world is a tough place
-                    //conn.close();
-                    //rs.close();
-                    //pStmt.close();
                 } catch (SQLException e1) {
                     e1.printStackTrace();
+                } finally {
+					try {
+						// Close Resources
+						if (pStmt != null)
+							pStmt.close();
+						if (rs != null)
+							rs.close();
+						if (conn != null)
+							conn.close();
+						if (stmt != null) 
+							stmt.close();
+					} catch (SQLException f) {
+						System.out.println(f.getMessage());
+					}
                 }
             }
         });
@@ -243,10 +255,7 @@ public class FactoryInfoPanel extends JPanel {
      * Set up the combo boxes with beer names and package names.
      */
     public void setupCombos() {
-        // If we don't have a connection, get one
-        if (conn == null) {
-            conn = Controller.getInstance().getConnection();
-        }
+        conn = Controller.getInstance().getConnection();
 
         // Query for the brewery names
         try {
@@ -272,6 +281,18 @@ public class FactoryInfoPanel extends JPanel {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+			try {
+				// Close Resources
+				if (rs != null)
+					rs.close();
+				if (conn != null)
+					conn.close();
+				if (stmt != null) 
+					stmt.close();
+			} catch (SQLException f) {
+				System.out.println(f.getMessage());
+			}
         }
     }
 

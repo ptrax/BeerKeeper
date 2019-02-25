@@ -69,9 +69,9 @@ public class MainFrame extends JFrame{
 		// Reference to this frame for future use
 		JFrame frame = this;
                 
-                // Adding window icon
-                ImageIcon icon = new ImageIcon(MainFrame.class.getResource("/beercon.png"));
-                frame.setIconImage(icon.getImage());
+		// Adding window icon
+        ImageIcon icon = new ImageIcon(MainFrame.class.getResource("/beercon.png"));
+        frame.setIconImage(icon.getImage());
 		
 		// Set the spacer values
 		spacer.setPreferredSize(new Dimension(10,40));
@@ -176,7 +176,7 @@ public class MainFrame extends JFrame{
 			
 			// Change to Brewery/Distributer screen
 			if(panel.equals("factory")) {
-                                factPanel.setupCombos();
+				factPanel.setupCombos();
 				dataArea.add(factPanel, BorderLayout.NORTH);
 				dataArea.revalidate();
 				this.revalidate();

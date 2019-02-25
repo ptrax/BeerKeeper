@@ -13,6 +13,12 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,6 +39,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Vector;
 
 import main.Controller;
 
@@ -169,21 +176,17 @@ public class StockInfoPanel extends JPanel{
 			}
 			
 		}
-		
-		// Change Listener for the button so it doesn't wreck the background (it's important)
-		execute.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				thisPanel.revalidate();
-			}
-		});
-		
+	
+
 		// Action listener for query button click. Upon click, query is executed
 		execute.addActionListener(new ActionListener() {
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Run the prepared statement to get stock info
 				try {
+					conn = Controller.getInstance().getConnection();
+					
 					// Need some allowance for the packaging in the query here
 					pStmt = conn.prepareStatement("SELECT Name,WeeksServed,CurrentUnits,Price,PACKAGING.pkgName \n" + 
 							"FROM STOCK JOIN BEER ON STOCK.BeerID = BEER.BeerID AND (BEER.Name = ? OR BEER.Name LIKE ?)\n" +
@@ -234,12 +237,20 @@ public class StockInfoPanel extends JPanel{
 					
 					table.setModel(model);
 					
-					// Should have these but it takes away the ability to run another query because the world is a tough place
-					//conn.close();
-					//rs.close();
-					//pStmt.close();
 				} catch(SQLException e1) {
 					e1.printStackTrace();
+				} finally {
+					try {
+						// Close Resources
+						if (pStmt != null)
+							pStmt.close();
+						if (rs != null)
+							rs.close();
+						if (conn != null)
+							conn.close();
+					} catch (SQLException f) {
+						System.out.println(f.getMessage());
+					}
 				}
 			}
 		});
@@ -272,7 +283,7 @@ public class StockInfoPanel extends JPanel{
 				deletePrompt.add(deletePanel);
 				
 				//(gfpierce) The below line didn't render very well for me, so I adjusted the height dimension
-				deletePrompt.setSize(new Dimension((int)deletePack.getPreferredSize().getWidth(),150));
+				deletePrompt.setSize(new Dimension((int)deletePack.getPreferredSize().getWidth(),75));
 				//deletePrompt.setSize(400,300);
 				deletePrompt.setLocationRelativeTo(thisPanel);
 				deletePrompt.setVisible(true);
@@ -285,6 +296,8 @@ public class StockInfoPanel extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
+							conn = Controller.getInstance().getConnection();
+							
 							// Craft the statement to delete what we want
 							pStmt = conn.prepareStatement("DELETE FROM BEER WHERE BEER.Name = ?");
 							pStmt.setString(1, beerName);
@@ -298,9 +311,21 @@ public class StockInfoPanel extends JPanel{
 						} catch (SQLException f) {
 							System.out.println(f.getMessage());
 						} finally {
+							try {
+								// Close Resources
+								if (pStmt != null)
+									pStmt.close();
+								if (rs != null)
+									rs.close();
+								if (conn != null)
+									conn.close();
+							} catch (SQLException f) {
+								System.out.println(f.getMessage());
+							}
+							
 							// Get rid of the screen when a button is clicked
 							deletePrompt.dispose();
-						}
+						} 
 					}
 				});
 				
@@ -313,6 +338,7 @@ public class StockInfoPanel extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
+							conn = Controller.getInstance().getConnection();
 							// First we make a statement to get the beer ID and package ID from the names in the row
 							stmt = conn.createStatement();
 							pStmt = conn.prepareStatement("SELECT pkgID, beerID FROM PACKAGING p, BEER b WHERE p.pkgName = ? AND b.Name = ?");
@@ -331,6 +357,20 @@ public class StockInfoPanel extends JPanel{
 						} catch (SQLException f) {
 							System.out.println(f.getMessage());
 						} finally {
+							try {
+								// Close Resources
+								if (pStmt != null)
+									pStmt.close();
+								if (rs != null)
+									rs.close();
+								if (conn != null)
+									conn.close();
+								if (stmt != null) 
+									stmt.close();
+							} catch (SQLException f) {
+								System.out.println(f.getMessage());
+							}
+							
 							// Get rid of the dialog box
 							deletePrompt.dispose();
 						}
@@ -344,165 +384,48 @@ public class StockInfoPanel extends JPanel{
 		addRow.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
-				// Set up text fields
-				JTextField brewerNameField = new JTextField("Brewer Name");
-				JTextField styleNameField = new JTextField("Style Name");
-				JTextField typeNameField = new JTextField("Type Name");
-				JTextField pkgNameField = new JTextField("Package Name");
-				JTextField beerNameField = new JTextField("Beer Name");
-				JTextField contentField = new JTextField("Alcohol Content");
-				JTextField descriptionField = new JTextField("Description");
-				
-				// Set up execute button
-				
-				JButton executeAdd = new JButton("Add to beers and stock");
-				
-				// Set up panel for the dialog
-				JPanel addPanel = new JPanel(new GridLayout(7,1));
-				addPanel.add(brewerNameField);
-				addPanel.add(styleNameField);
-				addPanel.add(typeNameField);
-				addPanel.add(pkgNameField);
-				addPanel.add(beerNameField);
-				addPanel.add(contentField);
-				addPanel.add(descriptionField);
-				addPanel.add(executeAdd);
-				
-				// Set up the dialog box
 				JDialog addPrompt = new JDialog();
-				addPrompt.add(addPanel);
-				addPrompt.setSize(600, 450);
-				addPrompt.setLocationRelativeTo(thisPanel);
-				addPrompt.setVisible(true);
+				AddStockPanel addPanel = new AddStockPanel();
 				
-				executeAdd.addActionListener(new ActionListener() {
+				addPanel.addPropertyChangeListener("clicked", new PropertyChangeListener() {
 					@Override
-					public void actionPerformed(ActionEvent e) {
-						try {
-							//Find last beerId and add 1 to it to create new beerId
-							rs = stmt.executeQuery("SELECT BeerId FROM BEER ORDER BY BeerID;");
-							int beerId = 0;
-							while (rs.next()) {
-								if (rs.isLast()) {
-									beerId = rs.getInt(1) + 1;
-								}
-							}
-							String beerIdString = Integer.toString(beerId);
-							
-							// Set up statement and variables to find brewerId
-							String brewerName = brewerNameField.getText();
-							pStmt = conn.prepareStatement("SELECT BrewerID FROM BREWERY WHERE Name = ?;");
-							pStmt.setString(1, brewerName);
-							rs = pStmt.executeQuery();
-							int brewerId = 0;
-							if (rs.next() == false) { // Checks for null result set
-								rs = stmt.executeQuery("SELECT BrewerID FROM BREWERY ORDER BY BrewerID");
-								while (rs.next()) {
-									if (rs.isLast()) {
-										brewerId = rs.getInt(1) + 1;
-										//Values: BrewerID | Name | Location | Phone | Email
-										pStmt = conn.prepareStatement("INSERT INTO BREWERY VALUES (?,?,?,?,?)");
-										pStmt.setString(1, Integer.toString(brewerId));
-										pStmt.setString(2, brewerName);
-										
-										//Probably need to update this
-										pStmt.setString(3, "USA");
-										pStmt.setString(4, "123-456-7890");
-										pStmt.setString(5, "brewery@newbrewer.com");
-										pStmt.executeUpdate();
-										conn.commit();
-									}
-								}
-							} else {
-								brewerId = rs.getInt(1);
-							}
-							String brewerIdString = Integer.toString(brewerId);
-							
-							// Get styleId
-							String styleName = styleNameField.getText();
-							pStmt = conn.prepareStatement("SELECT StyleID FROM STYLE WHERE StyleName = ?;");
-							pStmt.setString(1, styleName);
-							rs = pStmt.executeQuery();
-							int styleId = 0;
-							if (rs.next()) {
-								styleId = rs.getInt(1);
-							}
-							String styleIdString = Integer.toString(styleId);
-							
-							// Get typeId
-							String typeName = typeNameField.getText();
-							pStmt = conn.prepareStatement("SELECT TypeID FROM TYPE WHERE TypeName = ?;");
-							pStmt.setString(1, typeName);
-							rs = pStmt.executeQuery();
-							int typeId = 0;
-							if (rs.next()) {
-								typeId = rs.getInt(1);
-							}
-							String typeIdString = Integer.toString(typeId);
-							
-							// Add beer to table
-							String beerName = beerNameField.getText();
-							String beerContent = contentField.getText();
-							String description = descriptionField.getText();
-							
-							//Values: BeerId | Name | BrewerID | AlcContent | Description | StyleID | TypeID
-							pStmt = conn.prepareStatement("INSERT INTO BEER VALUES (?,?,?,?,?,?,?);");
-							pStmt.setString(1, beerIdString);
-							pStmt.setString(2, beerName);
-							pStmt.setString(3, brewerIdString);
-							pStmt.setString(4, beerContent);
-							pStmt.setString(5, description);
-							pStmt.setString(6, styleIdString);
-							pStmt.setString(7, typeIdString);
-							pStmt.executeUpdate();
-							conn.commit();
-							
-							// Get pkgID
-							String pkgName = pkgNameField.getText();
-							pStmt = conn.prepareStatement("SELECT PkgID FROM PACKAGING WHERE PkgName = ?;");
-							pStmt.setString(1, pkgName);
-							rs = pStmt.executeQuery();
-							int pkgId = 0;
-							if (rs.next()) {
-								pkgId = rs.getInt(1);
-							}
-							
-							String pkgIdString = Integer.toString(pkgId);
-							
-							// Get stockID
-							rs = stmt.executeQuery("SELECT StockID FROM STOCK;");
-							int stockId = 0;
-							while (rs.next()) {
-								if (rs.isLast()) {
-									stockId = rs.getInt(1) + 1;
-								}
-							}
-							String stockIdString = Integer.toString(stockId);
-							
-							// Insert into stock
-							//Values: 1: StockID | 2: BeerID | 3: WeeksServed | 4: CurrentUnits | 5: DesiredUnits | 6: SoldOverall | 7: Price | 8: PkgID
-							pStmt = conn.prepareStatement("INSERT INTO STOCK VALUES (?,?,?,?,?,?,?,?);");
-							pStmt.setString(1, stockIdString);
-							pStmt.setString(2, beerIdString);
-							pStmt.setString(3, "0");
-							pStmt.setString(4, "0");
-							pStmt.setString(5, "0");
-							pStmt.setString(6, "0");
-							pStmt.setString(7, "0");
-							pStmt.setString(8, pkgIdString);
-							
-							pStmt.executeUpdate();
-							conn.commit();
-							execute.doClick();
-						} catch (SQLException exc) {
-							exc.printStackTrace();
-						} finally {
-							addPrompt.dispose();
-						}
-					}
+					public void propertyChange(PropertyChangeEvent evt) {
+						execute.doClick();
+						addPrompt.dispose();
+					}	
 				});
 				
+				addPrompt.add(addPanel);
+				addPrompt.setSize(350, 250);
+				addPrompt.setLocationRelativeTo(thisPanel);
+				addPrompt.setVisible(true);
+			}		
+		});
+		
+		editRow.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JDialog editPrompt = new JDialog();
+				
+				int row = table.getSelectedRow();
+				DefaultTableModel model = (DefaultTableModel) table.getModel();
+				if(row >= 0) {
+					EditRowPanel addPanel = new EditRowPanel((String)model.getValueAt(row, 0), (String)model.getValueAt(row, 4));
+					
+					addPanel.addPropertyChangeListener("update", new PropertyChangeListener() {
+						@Override
+						public void propertyChange(PropertyChangeEvent evt) {
+							execute.doClick();
+							editPrompt.dispose();
+						}	
+					});
+					
+					editPrompt.add(addPanel);
+					editPrompt.setSize(250, 175);
+					editPrompt.setLocationRelativeTo(thisPanel);
+					editPrompt.setVisible(true);
+				}
 			}
 		});
 	}
@@ -511,10 +434,7 @@ public class StockInfoPanel extends JPanel{
 	 * Set up the combo boxes with beer names and package names. 
 	 */
 	public void setupCombos() {
-		// If we don't have a connection, get one
-		if (conn == null) {
-			conn = Controller.getInstance().getConnection();
-		}
+		conn = Controller.getInstance().getConnection();
 		
 		// Query for the beer names
 		try {
@@ -540,8 +460,21 @@ public class StockInfoPanel extends JPanel{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				// Close Resources
+				if (rs != null)
+					rs.close();
+				if (conn != null)
+					conn.close();
+				if (stmt != null) 
+					stmt.close();
+			} catch (SQLException f) {
+				System.out.println(f.getMessage());
+			}
 		}
 	}
+	
 	
 	@Override
 	protected void paintComponent(Graphics g) {

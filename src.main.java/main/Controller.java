@@ -16,7 +16,9 @@ public class Controller {
 	private static Controller instance = null;
 	private Connection conn = null;
 	private MainFrame mainFrame = null;
-	
+	private String connURL;
+	private String user;
+	private String pass;
 	private boolean isConnected = false;
 	
 	/**
@@ -55,6 +57,11 @@ public class Controller {
 			String conURL = "jdbc:mysql://" + url + "/Beerkeeper?autoReconnect=true&&useSSL=false" +
 							"&&useLegacyDatetimeCode=false&&serverTimezone=America/New_York"; 
 			
+			// Retain the values
+			this.connURL = conURL;
+			this.user = user;
+			this.pass = pass;
+			
 			// Set up the connection
 			conn = DriverManager.getConnection(conURL, user, pass);
 			conn.setAutoCommit(false);
@@ -77,11 +84,21 @@ public class Controller {
 	}
 	
 	/**
-	 * Get the connection to the SQL database. 
+	 * Get a new connection to the SQL database. Closing is the responsibility of the method
+	 * that gets the connection
 	 * @return Connection to database
 	 */
 	public Connection getConnection() {
-		return this.conn;
+		Connection connect = null;
+		try {
+			// Set up the connection
+			connect = DriverManager.getConnection(connURL, user, pass);
+			connect.setAutoCommit(false);
+		} catch(SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return connect;
 	}
 	
 	/**
@@ -93,10 +110,36 @@ public class Controller {
 	}
 	
 	/**
+	 * Closes the connection 
+	 */
+	public void closeResource() {
+		try {
+			if(conn!= null) {
+				conn.close();
+			}
+		} catch(SQLException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	/**
 	 * Entry point for Beerkeeper application
 	 * @param args
 	 */
 	public static void main(String args[]) {
 		MainFrame.getInstance();
+		
+		// Shutdown hook to close connection
+		final Thread mainThread = Thread.currentThread();
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+		    public void run() {
+		        System.out.println("Exiting, closing connection... ");
+		        Controller.getInstance().closeResource();
+		        try {
+					mainThread.join();
+				} catch (InterruptedException e) {
+				}
+		    }
+		});
 	}
 }
