@@ -42,7 +42,6 @@ public class ConnectionSetupPanel extends JPanel{
 	
 	JTextField urlTF = new JTextField(300);
 	JTextField userTF = new JTextField(300);
-	//JTextField passTF = new JTextField(300);
 	JPasswordField passTF = new JPasswordField(300);
 	
 	JButton connect = new JButton("Connect");

@@ -212,6 +212,7 @@ public class PopularityInfoPanel extends JPanel{
 				// AND(condition OR condition) is used so all records are returned when Any is 
 				// selected
 				try {
+					conn = Controller.getInstance().getConnection();
 					pStmt = conn.prepareStatement(
 							"SELECT b.Name,s.WeeksServed,pk.PkgName,p.TotalPplr,p.TimePplr,s.CurrentUnits \n" + 
 							"FROM BEER b, STOCK s, POPULARITY p, PACKAGING pk\n" + 
@@ -286,6 +287,18 @@ public class PopularityInfoPanel extends JPanel{
 					//pStmt.close();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
+				} finally {
+					try {
+						// Close Resources
+						if (pStmt != null)
+							pStmt.close();
+						if (rs != null)
+							rs.close();
+						if (conn != null)
+							conn.close();
+					} catch (SQLException f) {
+						System.out.println(f.getMessage());
+					}
 				}
 
 			}
@@ -298,10 +311,7 @@ public class PopularityInfoPanel extends JPanel{
 	 * could be updated after a connection was established
 	 */
 	public void setupCombos() {
-		// If we don't have a connection, get one.
-		if(conn == null) {
-			conn = Controller.getInstance().getConnection();
-		}
+		conn = Controller.getInstance().getConnection();
 		
 		// Query for the beer names
 		try {
@@ -327,6 +337,18 @@ public class PopularityInfoPanel extends JPanel{
 			}
 		} catch(SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				// Close Resources
+				if (rs != null)
+					rs.close();
+				if (conn != null)
+					conn.close();
+				if (stmt != null) 
+					stmt.close();
+			} catch (SQLException f) {
+				System.out.println(f.getMessage());
+			}
 		}
 	}
 	

@@ -33,13 +33,16 @@ import main.Controller;
  *
  */
 public class AddStockPanel extends JPanel{
+	// Get reference to this panel
 	JPanel thisPanel = this;
 	
+	// Set up connction objects
 	Connection conn = null;
 	ResultSet rs = null;
 	Statement stmt = null;
 	PreparedStatement pStmt = null;
 			
+	// Combo boxes for inputs
 	JComboBox<String> breweryName = new JComboBox<String>();
 	JComboBox<String> styleName = new JComboBox<String>();
 	JComboBox<String> typeName = new JComboBox<String>();
@@ -50,7 +53,12 @@ public class AddStockPanel extends JPanel{
 	JTextField contentField = new JTextField("Alcohol Content");
 	JTextField descriptionField = new JTextField("Description");
 	
-	public AddStockPanel(Connection conn) {
+	/**
+	 * Constructor for Add Stock Panel. Takes an open SQL connection to the database.
+	 * @param conn Open database connection
+	 */
+	public AddStockPanel() {
+		this.conn = Controller.getInstance().getConnection();
 		
 		// Query for the beer names
 		try {
@@ -106,44 +114,100 @@ public class AddStockPanel extends JPanel{
 			pkgName.addItem("Add...");
 		} catch (SQLException f) {
 			f.printStackTrace();
+		} finally {
+			try {
+				// Close Resources
+				if (stmt != null)
+					stmt.close();
+				if (rs != null)
+					rs.close();
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException f) {
+				System.out.println(f.getMessage());
+			}
 		}
 		
+		/**
+		 * Item listener for the breweryName combo box. This is checking for a new item to be
+		 * selected, and more specifically for the "Add..." option to be selected. If it is, 
+		 * a new dialog is generated that allows the user to create a new Brewery. 
+		 */
 		breweryName.addItemListener(new ItemListener() {
 	
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				// First, check that something is actually selected
 				if(breweryName.getSelectedIndex() >= 0) {
+					
+					// Check that it's the item we want and that it's selected (not deselected)
 					if(breweryName.getSelectedItem().equals("Add...") && e.getStateChange()== 1) {
-						JPanel addBreweryPanel = new AddBreweryPanel(conn);
+						
+						// Cteate new panel and dialog 
+						JPanel addBreweryPanel = new AddBreweryPanel();
 						JDialog breweryDialog = new JDialog();
 						
+						/**
+						 * Property change listener to get button clicks from the AddBreweryPanel.
+						 * The Property "add" is set to true if the add button is clicked, or set to 
+						 * false if the cancel button is clicked.
+						 */
 						addBreweryPanel.addPropertyChangeListener("add", new PropertyChangeListener() {
 							@Override
 							public void propertyChange(PropertyChangeEvent evt) {
-								System.out.println((boolean)evt.getNewValue());
+
+								// True means add was clicked
 								if((boolean)evt.getNewValue() == true) {
-									// Query for the style names
+									// Query for the Brewery names, as that list has been updated
 									try {
+										conn = Controller.getInstance().getConnection();
+										// Get the names
 										stmt = conn.createStatement();
 										rs = stmt.executeQuery("SELECT Name FROM BREWERY");
+										
+										// Clean the list
 										breweryName.removeAllItems();
-										breweryName.addItem("Select Brewerye...");
+										breweryName.addItem("Select Brewery...");
+										
+										// Add names from query
 										while (rs.next()) {
 											breweryName.addItem(rs.getString(1));
 										}
+										
+										// Add the "Add..." option
 										breweryName.addItem("Add...");
 									} catch (SQLException f) {
 										f.printStackTrace();
+									} finally {
+										try {
+											// Close Resources
+											if (stmt != null)
+												stmt.close();
+											if (rs != null)
+												rs.close();
+											if (conn != null) {
+												conn.close();
+											}
+										} catch (SQLException f) {
+											System.out.println(f.getMessage());
+										}
 									}
+									
+									// Set the selected index to what the user just entered
 									breweryName.setSelectedIndex(breweryName.getItemCount()-2);
 								} else {
+									// If the evt.getNewValue() == false, give them the "Select 
+									// Brewery" option
 									breweryName.setSelectedIndex(0);
 								}
 								
+								// In the end, close this dialog
 								breweryDialog.dispose();
 							}
 						});
 						
+						// Finish dialog setup 
 						breweryDialog.add(addBreweryPanel);
 						breweryDialog.setLocationRelativeTo(thisPanel.getParent());
 						breweryDialog.setSize(new Dimension(250,160));
@@ -154,42 +218,86 @@ public class AddStockPanel extends JPanel{
 			} 
 		});
 		
+		/**
+		 * Item listener for the styleName combo box. This is checking for a new item to be
+		 * selected, and more specifically for the "Add..." option to be selected. If it is, 
+		 * a new dialog is generated that allows the user to create a new Style. 
+		 */
 		styleName.addItemListener(new ItemListener() {
 	
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				conn = Controller.getInstance().getConnection();
+				
+				// First, check that something is actually selected
 				if(styleName.getSelectedIndex() >= 0) {
+					
+					// Check that it's the item we want and that it's selected (not deselected)
 					if(styleName.getSelectedItem().equals("Add...") && e.getStateChange()== 1) {
+						
+						// Cteate new panel and dialog 
 						JPanel addStylePanel = new AddStylePanel(conn);
 						JDialog styleDialog = new JDialog();
 						
+						/**
+						 * Property change listener to get button clicks from the AddStylePanel.
+						 * The Property "add" is set to true if the add button is clicked, or set to 
+						 * false if the cancel button is clicked.
+						 */
 						addStylePanel.addPropertyChangeListener("add", new PropertyChangeListener() {
 							@Override
 							public void propertyChange(PropertyChangeEvent evt) {
-								System.out.println((boolean)evt.getNewValue());
+
+								// True means add was clicked
 								if((boolean)evt.getNewValue() == true) {
-									// Query for the style names
+									// Query again for the style names, as the list has been updated
 									try {
+										conn = Controller.getInstance().getConnection();
+										// Get the names
 										stmt = conn.createStatement();
 										rs = stmt.executeQuery("SELECT StyleName FROM STYLE");
+										
+										// Clean the list
 										styleName.removeAllItems();
 										styleName.addItem("Select Style...");
+										
+										// Add names from query
 										while (rs.next()) {
 											styleName.addItem(rs.getString(1));
 										}
+										
+										// Add the "Add..." option
 										styleName.addItem("Add...");
 									} catch (SQLException f) {
 										f.printStackTrace();
+									} finally {
+										try {
+											// Close Resources
+											if (stmt != null)
+												stmt.close();
+											if (rs != null)
+												rs.close();
+											if (conn != null)
+												conn.close();
+										} catch (SQLException f) {
+											System.out.println(f.getMessage());
+										}
 									}
+									
+									// Set the selected index to what the user just entered
 									styleName.setSelectedIndex(styleName.getItemCount()-2);
 								} else {
+									// If the evt.getNewValue() == false, give them the "Select 
+									// Style" option
 									styleName.setSelectedIndex(0);
 								}
 								
+								// In the end, close the dialog
 								styleDialog.dispose();
 							}
 						});
 						
+						// Finish dialog setup
 						styleDialog.add(addStylePanel);
 						styleDialog.setLocationRelativeTo(thisPanel.getParent());
 						styleDialog.setSize(new Dimension(250,70));
@@ -201,15 +309,30 @@ public class AddStockPanel extends JPanel{
 		
 		});
 		
+		/**
+		 * Item listener for the typeName combo box. This is checking for a new item to be
+		 * selected, and more specifically for the "Add..." option to be selected. If it is, 
+		 * a new dialog is generated that allows the user to create a new Type. 
+		 */
 		typeName.addItemListener(new ItemListener() {
 	
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				// First, check that something is actually selected
 				if(typeName.getSelectedIndex() >= 0) {
+					
+					// Check that it's the item we want and that it's selected (not deselected)
 					if(typeName.getSelectedItem().equals("Add...") && e.getStateChange() == 1) {
-						JPanel addTypePanel = new AddTypePanel(conn);
+						
+						// Cteate new panel and dialog 
+						JPanel addTypePanel = new AddTypePanel();
 						JDialog typeDialog = new JDialog();
 						
+						/**
+						 * Property change listener to get button clicks from the AddTypePanel.
+						 * The Property "add" is set to true if the add button is clicked, or set to 
+						 * false if the cancel button is clicked.
+						 */
 						addTypePanel.addPropertyChangeListener("add", new PropertyChangeListener() {
 							@Override
 							public void propertyChange(PropertyChangeEvent evt) {
@@ -217,26 +340,52 @@ public class AddStockPanel extends JPanel{
 								if((boolean)evt.getNewValue() == true) {
 									// Query for the type names
 									try {
+										conn = Controller.getInstance().getConnection();
+										
+										// Get the names
 										stmt = conn.createStatement();
 										rs = stmt.executeQuery("SELECT TypeName FROM TYPE");
+										
+										// Clean the list
 										typeName.removeAllItems();
-										typeName.addItem("Select Type...");
+										
+										// Add names from query
 										while (rs.next()) {
 											typeName.addItem(rs.getString(1));
 										}
+										
+										// Add the "Add..." option
 										typeName.addItem("Add...");
 									} catch (SQLException f) {
 										f.printStackTrace();
+									} finally {
+										try {
+											// Close Resources
+											if (stmt != null)
+												stmt.close();
+											if (rs != null)
+												rs.close();
+											if (conn != null) 
+												conn.close();
+										} catch (SQLException f) {
+											System.out.println(f.getMessage());
+										}
 									}
+									
+									// Set the selected index to what the user just entered
 									typeName.setSelectedIndex(typeName.getItemCount()-2);
 								} else {
+									// If the evt.getNewValue() == false, give them the "Select 
+									// Style" option
 									typeName.setSelectedIndex(0);
 								}
 								
+								// In the end, close the dialog
 								typeDialog.dispose();
 							}
 						});
 						
+						// Finish dialog setup
 						typeDialog.add(addTypePanel);
 						typeDialog.setLocationRelativeTo(thisPanel.getParent());
 						typeDialog.setSize(new Dimension(250,70));
@@ -247,42 +396,81 @@ public class AddStockPanel extends JPanel{
 			}
 		});
 		
+		/**
+		 * Item listener for the pkgName combo box. This is checking for a new item to be
+		 * selected, and more specifically for the "Add..." option to be selected. If it is, 
+		 * a new dialog is generated that allows the user to create a new Type. 
+		 */
 		pkgName.addItemListener(new ItemListener() {
 	
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				conn = Controller.getInstance().getConnection();
+				
+				// First, check that something is actually selected
 				if(pkgName.getSelectedIndex() >= 0) {
+					
+					// Check that it's the item we want and that it's selected (not deselected)
 					if(pkgName.getSelectedItem().equals("Add...") && e.getStateChange()== 1) {
-						JPanel addPackagingPanel = new AddPackagingPanel(conn);
+						
+						// Cteate new panel and dialog 
+						JPanel addPackagingPanel = new AddPackagingPanel();
 						JDialog pkgDialog = new JDialog();
 						
+						/**
+						 * Property change listener to get button clicks from the AddPackagingPanel.
+						 * The Property "add" is set to true if the add button is clicked, or set to 
+						 * false if the cancel button is clicked.
+						 */
 						addPackagingPanel.addPropertyChangeListener("add", new PropertyChangeListener() {
 							@Override
 							public void propertyChange(PropertyChangeEvent evt) {
 								System.out.println((boolean)evt.getNewValue());
 								if((boolean)evt.getNewValue() == true) {
-									// Query for the style names
+									// Query for the Packaging names
 									try {
+										// Get the names
 										stmt = conn.createStatement();
 										rs = stmt.executeQuery("SELECT PkgName FROM PACKAGING");
+										
+										// Clean the list 
 										pkgName.removeAllItems();
 										pkgName.addItem("Select Packaging...");
+										
+										// Add names from query
 										while (rs.next()) {
 											pkgName.addItem(rs.getString(1));
 										}
 										pkgName.addItem("Add...");
 									} catch (SQLException f) {
 										f.printStackTrace();
+									} finally {
+										try {
+											// Close Resources
+											if (stmt != null)
+												stmt.close();
+											if (rs != null)
+												rs.close();
+											if (conn != null)
+												conn.close();
+										} catch (SQLException f) {
+											System.out.println(f.getMessage());
+										}
 									}
+									
+									// Add the "Add..." option
 									pkgName.setSelectedIndex(pkgName.getItemCount()-2);
 								} else {
+									// If the evt.getNewValue() == false, give them the "Select 
+									// Style" option
 									pkgName.setSelectedIndex(0);
 								}
-								
+								// In the end, close the dialog
 								pkgDialog.dispose();
 							}
 						});
 						
+						// Finish dialog setup
 						pkgDialog.add(addPackagingPanel);
 						pkgDialog.setLocationRelativeTo(thisPanel.getParent());
 						pkgDialog.setSize(new Dimension(250,70));
@@ -322,6 +510,8 @@ public class AddStockPanel extends JPanel{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
+					conn = Controller.getInstance().getConnection();
+					
 					//Find last beerId and add 1 to it to create new beerId
 					rs = stmt.executeQuery("SELECT BeerId FROM BEER ORDER BY BeerID;");
 					int beerId = 0;
@@ -422,6 +612,20 @@ public class AddStockPanel extends JPanel{
 				} catch (SQLException exc) {
 					exc.printStackTrace();
 				} finally {
+					try {
+						// Close Resources
+						if (pStmt != null)
+							pStmt.close();
+						if (rs != null)
+							rs.close();
+						if (conn != null)
+							conn.close();
+						if (stmt != null) 
+							stmt.close();
+					} catch (SQLException f) {
+						System.out.println(f.getMessage());
+					}
+					
 					thisPanel.firePropertyChange("clicked", false, true);
 				}
 			}

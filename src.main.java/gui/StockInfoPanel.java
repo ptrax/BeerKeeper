@@ -185,6 +185,8 @@ public class StockInfoPanel extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				// Run the prepared statement to get stock info
 				try {
+					conn = Controller.getInstance().getConnection();
+					
 					// Need some allowance for the packaging in the query here
 					pStmt = conn.prepareStatement("SELECT Name,WeeksServed,CurrentUnits,Price,PACKAGING.pkgName \n" + 
 							"FROM STOCK JOIN BEER ON STOCK.BeerID = BEER.BeerID AND (BEER.Name = ? OR BEER.Name LIKE ?)\n" +
@@ -235,12 +237,20 @@ public class StockInfoPanel extends JPanel{
 					
 					table.setModel(model);
 					
-					// Should have these but it takes away the ability to run another query because the world is a tough place
-					//conn.close();
-					//rs.close();
-					//pStmt.close();
 				} catch(SQLException e1) {
 					e1.printStackTrace();
+				} finally {
+					try {
+						// Close Resources
+						if (pStmt != null)
+							pStmt.close();
+						if (rs != null)
+							rs.close();
+						if (conn != null)
+							conn.close();
+					} catch (SQLException f) {
+						System.out.println(f.getMessage());
+					}
 				}
 			}
 		});
@@ -286,6 +296,8 @@ public class StockInfoPanel extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
+							conn = Controller.getInstance().getConnection();
+							
 							// Craft the statement to delete what we want
 							pStmt = conn.prepareStatement("DELETE FROM BEER WHERE BEER.Name = ?");
 							pStmt.setString(1, beerName);
@@ -299,9 +311,21 @@ public class StockInfoPanel extends JPanel{
 						} catch (SQLException f) {
 							System.out.println(f.getMessage());
 						} finally {
+							try {
+								// Close Resources
+								if (pStmt != null)
+									pStmt.close();
+								if (rs != null)
+									rs.close();
+								if (conn != null)
+									conn.close();
+							} catch (SQLException f) {
+								System.out.println(f.getMessage());
+							}
+							
 							// Get rid of the screen when a button is clicked
 							deletePrompt.dispose();
-						}
+						} 
 					}
 				});
 				
@@ -314,6 +338,7 @@ public class StockInfoPanel extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
+							conn = Controller.getInstance().getConnection();
 							// First we make a statement to get the beer ID and package ID from the names in the row
 							stmt = conn.createStatement();
 							pStmt = conn.prepareStatement("SELECT pkgID, beerID FROM PACKAGING p, BEER b WHERE p.pkgName = ? AND b.Name = ?");
@@ -332,6 +357,20 @@ public class StockInfoPanel extends JPanel{
 						} catch (SQLException f) {
 							System.out.println(f.getMessage());
 						} finally {
+							try {
+								// Close Resources
+								if (pStmt != null)
+									pStmt.close();
+								if (rs != null)
+									rs.close();
+								if (conn != null)
+									conn.close();
+								if (stmt != null) 
+									stmt.close();
+							} catch (SQLException f) {
+								System.out.println(f.getMessage());
+							}
+							
 							// Get rid of the dialog box
 							deletePrompt.dispose();
 						}
@@ -346,7 +385,7 @@ public class StockInfoPanel extends JPanel{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JDialog addPrompt = new JDialog();
-				AddStockPanel addPanel = new AddStockPanel(conn);
+				AddStockPanel addPanel = new AddStockPanel();
 				
 				addPanel.addPropertyChangeListener("clicked", new PropertyChangeListener() {
 					@Override
@@ -372,7 +411,7 @@ public class StockInfoPanel extends JPanel{
 				int row = table.getSelectedRow();
 				DefaultTableModel model = (DefaultTableModel) table.getModel();
 				if(row >= 0) {
-					EditRowPanel addPanel = new EditRowPanel(conn, (String)model.getValueAt(row, 0), (String)model.getValueAt(row, 4));
+					EditRowPanel addPanel = new EditRowPanel((String)model.getValueAt(row, 0), (String)model.getValueAt(row, 4));
 					
 					addPanel.addPropertyChangeListener("update", new PropertyChangeListener() {
 						@Override
@@ -395,10 +434,7 @@ public class StockInfoPanel extends JPanel{
 	 * Set up the combo boxes with beer names and package names. 
 	 */
 	public void setupCombos() {
-		// If we don't have a connection, get one
-		if (conn == null) {
-			conn = Controller.getInstance().getConnection();
-		}
+		conn = Controller.getInstance().getConnection();
 		
 		// Query for the beer names
 		try {
@@ -424,6 +460,18 @@ public class StockInfoPanel extends JPanel{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				// Close Resources
+				if (rs != null)
+					rs.close();
+				if (conn != null)
+					conn.close();
+				if (stmt != null) 
+					stmt.close();
+			} catch (SQLException f) {
+				System.out.println(f.getMessage());
+			}
 		}
 	}
 	
