@@ -40,14 +40,14 @@ public class FactoryInfoPanel extends JPanel {
     JPanel thisPanel = this;
 
     // Set up components
-    JLabel header = new JLabel("Brewery Info", SwingConstants.CENTER);
+    JLabel header = new JLabel("Breweries and Distributors", SwingConstants.CENTER);
     JLabel brewery = new JLabel("Brewery:", SwingConstants.CENTER);
-    JLabel type = new JLabel("Type:", SwingConstants.CENTER);
+    JLabel dist = new JLabel("Distributer:", SwingConstants.CENTER);
 
-    JComboBox<String> breweryPicker = new JComboBox<>();
-    JComboBox<String> typePicker = new JComboBox<>();
-
-    JButton execute = new JButton("Execute Query");
+    JComboBox<String> breweryPicker = new JComboBox<String>();
+    JComboBox<String> distPicker = new JComboBox<String>();
+    
+    JButton execute = new JButton("Execute");
 
     JScrollPane scroll = new JScrollPane();
     JTable table = new JTable();
@@ -77,7 +77,7 @@ public class FactoryInfoPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         this.add(header, c);
 
-        // Set up "Select Beer" label
+        // Set up "Brewery:" label
         c.insets = new Insets(0, 0, 10, 0);
         c.weightx = 0;
         c.gridx = 0;
@@ -88,21 +88,24 @@ public class FactoryInfoPanel extends JPanel {
         // Set up Beer picker
         c.insets = new Insets(0, 0, 0, 0);
         c.gridx = 1;
-        this.add(breweryPicker);
-
-        // Set up "Select Packaging" label
-        c.gridx = 2;
-        this.add(type, c);
-
-        // Set up the package picker
-        c.gridx = 4;
         c.gridwidth = GridBagConstraints.REMAINDER;
-        this.add(typePicker, c);
+        this.add(breweryPicker, c);
 
+        // Set up "Distributor:" label
+        c.gridwidth = GridBagConstraints.BOTH;
+        c.gridy = 2;
+        c.gridx = 0;
+        this.add(dist, c);
+        
+        // Set up distributer combo box
+        c.gridx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        this.add(distPicker, c);
+        
         // Set up the execute button
         c.insets = new Insets(0, 0, 10, 0);
         c.gridx = 4;
-        c.gridy = 2;
+        c.gridy = 3;
         c.gridwidth = GridBagConstraints.REMAINDER;
         this.add(execute, c);
 
@@ -165,20 +168,14 @@ public class FactoryInfoPanel extends JPanel {
             	
                 // Prepare alternate prepared statements
                 boolean picked = true;
-                String pStmt1 = "SELECT bw.Name,bw.Location,b.Name,s.StyleName \n"
-                        + "FROM BEER b, BREWERY bw, STYLE s \n"
-                        + "WHERE (bw.Name = ? OR bw.Name LIKE ?) AND b.BrewerID = bw.BrewerID AND s.StyleID = b.StyleID;";
-                String pStmt2 = "SELECT bw.Name,bw.Location,b.Name,s.StyleName,t.TypeName \n"
-                        + "FROM BEER b, BREWERY bw, STYLE s, TYPE t\n"
-                        + "WHERE (bw.Name = ? OR bw.Name LIKE ?) AND b.BrewerID = bw.BrewerID AND s.StyleID = b.StyleID AND t.TypeID = b.TypeID AND (t.TypeName = ? OR t.TypeName LIKE ?);";
-                // Run the prepared statement to get stock info
+                String pStmt1 = "SELECT bw.Name AS 'Brewery', dist.Name AS 'Distributor'\n" + 
+                				"FROM BREWERY bw JOIN DISTRIBUTES ON bw.BrewerID = DISTRIBUTES.BrewerID\n" + 
+        						"JOIN DISTRIBUTOR dist ON DISTRIBUTES.DistID = dist.DistID\n"+
+                				"WHERE (bw.Name = ? OR dist.Name LIKE ?) AND (dist.Name = ? OR dist.Name LIKE ?)";
+               
                 try {
-                    if (typePicker.getSelectedItem().equals("Any")) {
-                        pStmt = conn.prepareStatement(pStmt1);
-                        picked = false;
-                    } else {
-                        pStmt = conn.prepareStatement(pStmt2);
-                    }
+                	pStmt = conn.prepareStatement(pStmt1);
+                	
                     // Set the first string for the brewery name
                     if (breweryPicker.getSelectedItem().equals("Any")) {
                         pStmt.setString(1, "%");
@@ -188,15 +185,14 @@ public class FactoryInfoPanel extends JPanel {
                         pStmt.setString(2, (String) breweryPicker.getSelectedItem());
                     }
 
-                    if (picked) {
-                        if (typePicker.getSelectedItem().equals("Any")) {
-                            pStmt.setString(3, "%");
-                            pStmt.setString(4, "%");
-                        } else {
-                            pStmt.setString(3, (String) typePicker.getSelectedItem());
-                            pStmt.setString(4, (String) typePicker.getSelectedItem());
-                        }
+                    if (distPicker.getSelectedItem().equals("Any")) {
+                        pStmt.setString(3, "%");
+                        pStmt.setString(4, "%");
+                    } else {
+                        pStmt.setString(3, (String) distPicker.getSelectedItem());
+                        pStmt.setString(4, (String) distPicker.getSelectedItem());
                     }
+                    
 
                     rs = pStmt.executeQuery();
 
@@ -210,7 +206,7 @@ public class FactoryInfoPanel extends JPanel {
                     model.setColumnCount(rs.getMetaData().getColumnCount());
                     Object[] columnNames = new Object[model.getColumnCount()];
                     for (int i = 1; i <= model.getColumnCount(); i++) {
-                        columnNames[i - 1] = rs.getMetaData().getColumnName(i);
+                        columnNames[i - 1] = rs.getMetaData().getColumnLabel(i);
                     }
 
                     model.setColumnIdentifiers(columnNames);
@@ -219,13 +215,8 @@ public class FactoryInfoPanel extends JPanel {
                     while (rs.next()) {
                         System.out.println(rs);
                         System.out.println(rs.getString(1));
-                        if (picked) {
-                            Object rowData[] = {rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5)};
-                            model.addRow(rowData);
-                        } else {
-                            Object rowData[] = {rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)};
-                            model.addRow(rowData);
-                        }
+                        Object rowData[] = {rs.getString(1), rs.getString(2)};
+                        model.addRow(rowData);
                     }
 
                     table.setModel(model);
@@ -257,8 +248,8 @@ public class FactoryInfoPanel extends JPanel {
     public void setupCombos() {
         conn = Controller.getInstance().getConnection();
 
-        // Query for the brewery names
         try {
+            // Query for the brewery names
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT Name FROM BREWERY");
             breweryPicker.removeAllItems();
@@ -266,18 +257,14 @@ public class FactoryInfoPanel extends JPanel {
             while (rs.next()) {
                 breweryPicker.addItem(rs.getString(1));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
-        // Query for the package names
-        try {
+            // Query for distributer names
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT TypeName FROM TYPE");
-            typePicker.removeAllItems();
-            typePicker.addItem("Any");
+            rs = stmt.executeQuery("SELECT Name FROM DISTRIBUTOR");
+            distPicker.removeAllItems();
+            distPicker.addItem("Any");
             while (rs.next()) {
-                typePicker.addItem(rs.getString(1));
+                distPicker.addItem(rs.getString(1));
             }
         } catch (SQLException e) {
             e.printStackTrace();

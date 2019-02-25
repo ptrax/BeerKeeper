@@ -17,6 +17,7 @@ import javax.swing.SwingConstants;
  */
 public class HomePanel extends JPanel{
 	JLabel header = new JLabel("Welcome to Beerkeeper", SwingConstants.CENTER);
+	JLabel prompt = new JLabel("Begin by using the menu on the left.");
 	public HomePanel() {
 		this.setBackground(new Color(255,255,255,0));
 		
@@ -32,5 +33,15 @@ public class HomePanel extends JPanel{
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		this.add(header, c);
+		
+		// Set up the prompt
+        header.setFont(new Font("Calibri", Font.PLAIN, 18));
+		c.insets = new Insets(25, 0, 0, 0);
+        c.ipady=0;
+        c.gridy = 1;
+		c.weightx = 0;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		this.add(prompt, c);
 	}
 }
