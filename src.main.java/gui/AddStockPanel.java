@@ -513,6 +513,7 @@ public class AddStockPanel extends JPanel{
 					conn = Controller.getInstance().getConnection();
 					
 					//Find last beerId and add 1 to it to create new beerId
+					stmt = conn.createStatement();
 					rs = stmt.executeQuery("SELECT BeerId FROM BEER ORDER BY BeerID;");
 					int beerId = 0;
 					while (rs.next()) {
@@ -609,6 +610,14 @@ public class AddStockPanel extends JPanel{
 					pStmt.executeUpdate();
 					conn.commit();
 					
+					
+					pStmt = conn.prepareStatement("INSERT INTO POPULARITY VALUES(?,?,?)");
+					pStmt.setString(1, stockIdString);
+					pStmt.setString(2, "0");
+					pStmt.setString(3, "0");
+					
+					pStmt.executeUpdate();
+					conn.commit();
 				} catch (SQLException exc) {
 					exc.printStackTrace();
 				} finally {

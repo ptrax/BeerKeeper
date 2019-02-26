@@ -55,9 +55,11 @@ public class StockInfoPanel extends JPanel{
 	JLabel header = new JLabel("Stock Info", SwingConstants.CENTER);
 	JLabel beer = new JLabel("Beer:", SwingConstants.CENTER);
 	JLabel packaging = new JLabel("Packaging:", SwingConstants.CENTER);
+	JLabel brewery = new JLabel("Brewery:", SwingConstants.CENTER);
 	
 	JComboBox<String> beerPicker = new JComboBox<String>();
 	JComboBox<String> packagePicker = new JComboBox<String>();
+	JComboBox<String> brewryPicker = new JComboBox<String>();
 	
 	JButton execute = new JButton("Execute Query");
 	JButton addRow = new JButton("Add Row");
@@ -84,7 +86,7 @@ public class StockInfoPanel extends JPanel{
 		
 		// Set up the header
         header.setFont(new Font("Calibri", Font.PLAIN, 24));
-		c.insets = new Insets(25, 0, 25, 0);
+		c.insets = new Insets(25, 0,0, 0);
 		c.anchor = GridBagConstraints.NORTHEAST;
 		c.weightx = 1.25;
 		c.weighty = 1;
@@ -115,10 +117,19 @@ public class StockInfoPanel extends JPanel{
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		this.add(packagePicker, c);
 		
+		// Set up "Select Packaging" label
+		c.gridwidth = GridBagConstraints.BOTH;
+		c.gridy = 2;
+		c.gridx = 0;
+		this.add(brewery, c);
+		
+		// Set up the package picker
+		c.gridx = 1;
+		this.add(brewryPicker, c);
+		
 		// Set up the execute button
 		c.insets = new Insets(0,0,10,0);
 		c.gridx = 4;
-		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		this.add(execute, c);
 		
@@ -188,8 +199,9 @@ public class StockInfoPanel extends JPanel{
 					conn = Controller.getInstance().getConnection();
 					
 					// Need some allowance for the packaging in the query here
-					pStmt = conn.prepareStatement("SELECT Name,WeeksServed,CurrentUnits,Price,PACKAGING.pkgName \n" + 
+					pStmt = conn.prepareStatement("SELECT BEER.Name AS 'Beer', BREWERY.Name AS 'Brewer', WeeksServed,CurrentUnits,Price,PACKAGING.pkgName \n" + 
 							"FROM STOCK JOIN BEER ON STOCK.BeerID = BEER.BeerID AND (BEER.Name = ? OR BEER.Name LIKE ?)\n" +
+							"JOIN BREWERY ON BREWERY.BrewerID = BEER.BrewerID\n" +
 							"JOIN PACKAGING ON STOCK.pkgID = PACKAGING.pkgID WHERE (PACKAGING.pkgName = ? OR PACKAGING.pkgName LIKE ?);");
 					
 					// Set the first string for the beer name
@@ -222,16 +234,14 @@ public class StockInfoPanel extends JPanel{
 					model.setColumnCount(rs.getMetaData().getColumnCount());
 					Object[] columnNames = new Object[model.getColumnCount()];
 					for (int i = 1; i <= model.getColumnCount(); i++) {
-						columnNames[i-1] = rs.getMetaData().getColumnName(i);
+						columnNames[i-1] = rs.getMetaData().getColumnLabel(i);
 					}
 					
 					model.setColumnIdentifiers(columnNames);
 					
 					// Iterate through result set, placing data in table rows
 					while (rs.next()) {
-						System.out.println(rs);
-						System.out.println(rs.getString(1));
-						Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getDouble(4), rs.getString(5)};
+						Object rowData[] = {rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getDouble(5), rs.getString(6)};
 						model.addRow(rowData);
 					}
 					
@@ -411,7 +421,7 @@ public class StockInfoPanel extends JPanel{
 				int row = table.getSelectedRow();
 				DefaultTableModel model = (DefaultTableModel) table.getModel();
 				if(row >= 0) {
-					EditRowPanel addPanel = new EditRowPanel((String)model.getValueAt(row, 0), (String)model.getValueAt(row, 4));
+					EditRowPanel addPanel = new EditRowPanel((String)model.getValueAt(row, 0), (String)model.getValueAt(row, 5));
 					
 					addPanel.addPropertyChangeListener("update", new PropertyChangeListener() {
 						@Override
@@ -436,8 +446,10 @@ public class StockInfoPanel extends JPanel{
 	public void setupCombos() {
 		conn = Controller.getInstance().getConnection();
 		
-		// Query for the beer names
+		
 		try {
+			
+			// Query for the beer names
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("SELECT Name FROM BEER");
 			beerPicker.removeAllItems();
@@ -445,18 +457,23 @@ public class StockInfoPanel extends JPanel{
 			while (rs.next()) {
 				beerPicker.addItem(rs.getString(1));
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 		
-		// Query for the package names
-		try {
+			// Query for the package names
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("SELECT PkgName FROM PACKAGING");
 			packagePicker.removeAllItems();
 			packagePicker.addItem("Any");
 			while (rs.next()) {
 				packagePicker.addItem(rs.getString(1));
+			}
+			
+			// Query for brewery names
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT Name FROM BREWERY");
+			brewryPicker.removeAllItems();
+			brewryPicker.addItem("Any");
+			while (rs.next()) {
+				brewryPicker.addItem(rs.getString(1));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -56,6 +56,8 @@ public class EditRowPanel extends JPanel {
 	// Variable declarations
 	int beerID = 0;
 	int pkgID = 0;
+	int stockID = 0;
+	int totalSold = 0;
 	
 	/** 
 	 * Constructor for EditRowPanel class. Takes an open connection to the SQL
@@ -83,6 +85,13 @@ public class EditRowPanel extends JPanel {
 		this.add(addButton);
 		
 		try {
+			// Get the total number of beers sold
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT SUM(SoldOverall) FROM STOCK");
+			if(rs.next()) {
+				totalSold = rs.getInt(1);
+			}
+			
 			// Get the Beer ID from the name
 			pStmt = conn.prepareStatement("SELECT BeerID FROM BEER WHERE Name = ?");
 			pStmt.setString(1, beerName);
@@ -109,6 +118,7 @@ public class EditRowPanel extends JPanel {
 			
 			// Set up the textfields with the current information
 			if(rs.next()) {
+				stockID = rs.getInt(1);
 				weeksField.setText(rs.getString(3));
 				curUnitsField.setText(rs.getString(4));
 				desUnitsField.setText(rs.getString(5));
@@ -156,6 +166,16 @@ public class EditRowPanel extends JPanel {
 					// Execute and commit
 					pStmt.executeUpdate();
 					conn.commit();
+					
+					// Update popularity
+					pStmt = conn.prepareStatement("UPDATE POPULARITY SET TotalPplr = ?, TimePplr = ? WHERE StockID = ?");
+					pStmt.setInt(1, (totalSold/(Integer.valueOf(soldOverallField.getText()))));
+					pStmt.setInt(2, (Integer.valueOf(soldOverallField.getText())/Integer.valueOf(weeksField.getText())));
+					pStmt.setInt(3, stockID);
+					
+					pStmt.executeUpdate();
+					conn.commit();
+					
 				} catch (SQLException f) {
 					System.out.println(f.getMessage());
 				} finally {
